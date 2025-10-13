@@ -1,0 +1,202 @@
+﻿@model Web.ViewModels.DriveViewModel
+@{
+    ViewData["Title"] = Model.CurrentFolderName;
+}
+
+<!-- Google Drive-like Header -->
+<div class="drive-header bg-white shadow-sm border-bottom">
+    <div class="container-fluid">
+        <div class="row align-items-center py-3">
+            <div class="col-md-6">
+                <h4 class="mb-0">@Model.CurrentFolderName</h4>
+            </div>
+            <div class="col-md-6 text-end">
+                <!-- New Button (Google Drive style) -->
+                <div class="dropdown">
+                    <button class="btn btn-primary dropdown-toggle" type="button" id="newButton" data-bs-toggle="dropdown">
+                        <i class="material-icons">add</i> New
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#createFolderModal">
+                                <i class="material-icons">folder</i> Folder
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <a class="dropdown-item" href="#" onclick="document.getElementById('fileInput').click()">
+                                <i class="material-icons">upload_file</i> File upload
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="#" onclick="document.getElementById('folderInput').click()">
+                                <i class="material-icons">drive_folder_upload</i> Folder upload
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Breadcrumb Navigation -->
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                @foreach (var crumb in Model.Breadcrumbs)
+                {
+                    @if (crumb == Model.Breadcrumbs.Last())
+                    {
+                        <li class="breadcrumb-item active">@crumb.Name</li>
+                    }
+                    else
+                    {
+                        <li class="breadcrumb-item">
+                            <a asp-action="Index" asp-route-folderId="@crumb.Id">@crumb.Name</a>
+                        </li>
+                    }
+                }
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<!-- Drive Content Area -->
+<div class="drive-content">
+    <div class="container-fluid py-4">
+
+        <!-- Success/Error Messages -->
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show">
+                @TempData["Success"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show">
+                @TempData["Error"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+
+        <!-- Folders Grid -->
+        @if (Model.Folders.Any())
+        {
+            <div class="section-header mb-3">
+                <h6 class="text-muted">Folders</h6>
+            </div>
+            <div class="row mb-4">
+                @foreach (var folder in Model.Folders)
+                {
+                    <div class="col-md-2 col-sm-3 col-4 mb-3">
+                        <div class="drive-item folder-item" onclick="openFolder('@folder.Id')">
+                            <div class="drive-item-icon">
+                                <i class="material-icons folder-icon">folder</i>
+                            </div>
+                            <div class="drive-item-name">@folder.Name</div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+
+        <!-- Files Grid -->
+        @if (Model.Files.Any())
+        {
+            <div class="section-header mb-3">
+                <h6 class="text-muted">Files</h6>
+            </div>
+            <div class="row">
+                @foreach (var file in Model.Files)
+                {
+                    <div class="col-md-2 col-sm-3 col-4 mb-3">
+                        <div class="drive-item file-item" onclick="openFile('@file.Id')">
+                            <div class="drive-item-icon">
+                                @if (file.MimeType.StartsWith("image/"))
+                                {
+                                    <div class="file-thumbnail">
+                                        <img src="/api/files/@file.Id/thumbnail" alt="@file.Name" />
+                                    </div>
+                                }
+                                else
+                                {
+                                    <i class="material-icons file-icon">@file.Icon</i>
+                                }
+                            </div>
+                            <div class="drive-item-name">@file.Name</div>
+                            <div class="drive-item-size">@GetFileSize(file.Size)</div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+
+        <!-- Empty State -->
+        @if (!Model.Folders.Any() && !Model.Files.Any())
+        {
+            <div class="text-center py-5">
+                <i class="material-icons" style="font-size: 4rem; color: #ccc;">folder_open</i>
+                <h5 class="text-muted mt-3">This folder is empty</h5>
+                <p class="text-muted">Use the "New" button to add files and folders</p>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Hidden File Inputs -->
+<form asp-action="Upload" method="post" enctype="multipart/form-data" style="display: none;">
+    <input type="file" id="fileInput" name="file" onchange="this.form.submit()" />
+    <input type="hidden" name="folderId" value="@Model.CurrentFolderId" />
+</form>
+
+<!-- Create Folder Modal -->
+<div class="modal fade" id="createFolderModal" tabindex="-1">
+    <div class="modal-dialog">
+        <form asp-action="CreateFolder" method="post">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Create Folder</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="folderName" class="form-label">Folder Name</label>
+                        <input type="text" class="form-control" id="folderName" name="folderName" required>
+                        <input type="hidden" name="parentFolderId" value="@Model.CurrentFolderId" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@functions {
+    string GetFileSize(long bytes)
+    {
+        string[] sizes = { "B", "KB", "MB", "GB" };
+        double len = bytes;
+        int order = 0;
+        while (len >= 1024 && order < sizes.Length - 1)
+        {
+            order++;
+            len = len / 1024;
+        }
+        return $"{len:0.##} {sizes[order]}";
+    }
+}
+
+<script>
+    function openFolder(folderId) {
+        window.location.href = '@Url.Action("Index", "Drive")?folderId=' + folderId;
+    }
+
+    function openFile(fileId) {
+        // Implement file preview/download logic
+        window.open('/api/files/' + fileId + '/download', '_blank');
+    }
+</script>

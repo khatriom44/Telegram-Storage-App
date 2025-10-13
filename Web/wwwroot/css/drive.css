@@ -1,0 +1,114 @@
+﻿/* Google Drive-like styling */
+.drive-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.drive-item {
+    text-align: center;
+    padding: 16px 8px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    position: relative;
+}
+
+    .drive-item:hover {
+        background-color: #f1f3f4;
+    }
+
+.drive-item-icon {
+    margin-bottom: 8px;
+}
+
+.folder-icon {
+    font-size: 48px;
+    color: #1a73e8;
+}
+
+.file-icon {
+    font-size: 48px;
+    color: #5f6368;
+}
+
+.file-thumbnail {
+    width: 48px;
+    height: 48px;
+    margin: 0 auto;
+    border-radius: 4px;
+    overflow: hidden;
+    background: #f8f9fa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+    .file-thumbnail img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: cover;
+    }
+
+.drive-item-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: #202124;
+    margin-bottom: 4px;
+    word-break: break-word;
+    line-height: 1.3;
+}
+
+.drive-item-size {
+    font-size: 12px;
+    color: #5f6368;
+}
+
+.section-header h6 {
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.breadcrumb {
+    background: none;
+    padding: 0;
+    margin: 8px 0 0 0;
+}
+
+.breadcrumb-item + .breadcrumb-item::before {
+    content: ">";
+    color: #5f6368;
+}
+
+/* New button styling */
+#newButton {
+    border-radius: 24px;
+    padding: 8px 24px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.dropdown-menu {
+    border: none;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    border-radius: 8px;
+    padding: 8px 0;
+}
+
+.dropdown-item {
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+    .dropdown-item i {
+        font-size: 20px;
+        width: 20px;
+    }
+
+/* Material Icons support */
+@import url('https://fonts.googleapis.com/icon?family=Material+Icons');
