@@ -6,13 +6,13 @@ using System.Threading.Tasks;
 
 namespace Domain.Entities
 {
-    public class FileChunk
+    public class FileItem
     {
         public Guid Id { get; set; }
-        public Guid FileId { get; set; }
-        public int Index { get; set; }
-        public string TelegramFileId { get; set; }
+        public Guid FolderId { get; set; }
+        public string FileName { get; set; } = string.Empty;
         public long Size { get; set; }
-        public string ChecksumMD5 { get; set; }
+        public DateTime UploadedAt { get; set; }
+        public long? TelegramMessageId { get; set; }
     }
 }

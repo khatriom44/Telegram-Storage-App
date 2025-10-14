@@ -1,0 +1,85 @@
+﻿@model IEnumerable<Application.DTOs.FolderDto>
+@{
+    ViewData["Title"] = "My Telegram Storage";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h2">My Telegram Storage</h1>
+        <button type="button" class="btn btn-primary" id="newFolderBtn">
+            <i class="fas fa-plus"></i> New Folder
+        </button>
+    </div>
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="row" id="folderContainer">
+        @foreach (var folder in Model)
+        {
+            <div class="col-md-3 mb-3 folder-item" data-folder-id="@folder.Id">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="fas fa-folder text-warning me-2 fs-4"></i>
+                            <div class="flex-grow-1">
+                                <div class="folder-name-display" ondblclick="editFolderName('@folder.Id')">
+                                    @folder.Name
+                                </div>
+                                <input type="text" class="form-control folder-name-input d-none"
+                                       value="@folder.Name" maxlength="255"
+                                       onblur="saveFolderName('@folder.Id')"
+                                       onkeydown="handleFolderNameKeydown(event, '@folder.Id')">
+                            </div>
+                        </div>
+                        <small class="text-muted">
+                            Created: @folder.CreatedAt.ToString("MMM dd, yyyy")
+                        </small>
+                    </div>
+                    <div class="card-footer bg-transparent">
+                        <div class="btn-group w-100" role="group">
+                            <button type="button" class="btn btn-outline-secondary btn-sm"
+                                    onclick="editFolderName('@folder.Id')">
+                                <i class="fas fa-edit"></i> Rename
+                            </button>
+                            <button type="button" class="btn btn-outline-danger btn-sm"
+                                    onclick="deleteFolder('@folder.Id', '@folder.Name')">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="text-center py-5" id="emptyState">
+            <i class="fas fa-folder-open fa-5x text-muted mb-3"></i>
+            <h3 class="text-muted">No folders yet</h3>
+            <p class="text-muted">Create your first folder to get started with Telegram storage</p>
+            <button type="button" class="btn btn-primary" onclick="createNewFolder()">
+                <i class="fas fa-plus"></i> Create First Folder
+            </button>
+        </div>
+    }
+</div>
+
+<!-- Loading indicator -->
+<div class="d-none" id="loadingIndicator">
+    <div class="text-center">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/folder-management.js"></script>
+}

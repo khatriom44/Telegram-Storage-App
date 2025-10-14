@@ -1,44 +1,29 @@
-using System;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Options;
-using Telegram.Bot;
 using Application.Interfaces;
 using Infrastructure.Services;
-using Infrastructure.Repositories;
-using Application.Handlers;
-using MediatR;
+using Microsoft.Extensions.Options;
+using Telegram.Bot;
 using Web.Configurations;
 
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.Configure<TelegramSettings>(builder.Configuration.GetSection("Telegram"));
-builder.Services.AddSingleton(sp =>
+// Configure Telegram settings
+builder.Services.Configure<TelegramSettings>(
+    builder.Configuration.GetSection(TelegramSettings.SectionName));
+
+// Register Telegram Bot Client
+builder.Services.AddSingleton<TelegramBotClient>(provider =>
 {
-    var config = sp.GetRequiredService<IOptions<TelegramSettings>>().Value;
-    var httpClient = new HttpClient
-    {
-        Timeout = TimeSpan.FromMinutes(10) // adjust as needed
-    };
-    return new TelegramBotClient(config.BotToken);
+    var settings = provider.GetRequiredService<IOptions<TelegramSettings>>().Value;
+    return new TelegramBotClient(settings.BotToken);
 });
-// Register telegram service implementation for metadata handling
 builder.Services.AddScoped<ITelegramService, TelegramService>();
 
-builder.Services.AddScoped<ITelegramFileService, TelegramFileService>();
-builder.Services.AddScoped<IFileRepository, TelegramFileRepository>();
-
-builder.Services.AddScoped<IVideoChunkService, VideoChunkService>();
-
-// Register MediatR with updated syntax for latest versions
-builder.Services.AddMediatR(cfg =>
-    cfg.RegisterServicesFromAssemblyContaining<UploadFileCommandHandler>());
-
-// Add controllers and views
+// Register application services
 builder.Services.AddControllersWithViews();
 
+// Add logging
+builder.Services.AddLogging();
 var app = builder.Build();
 
 // Configure middleware pipeline
@@ -56,7 +41,31 @@ app.UseAuthorization();
 app.MapStaticAssets();
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}")
+    pattern: "{controller=Folder}/{action=Index}/{id?}")
    .WithStaticAssets();
+
+
+using (var scope = app.Services.CreateScope())
+{
+    var telegramService = scope.ServiceProvider.GetRequiredService<ITelegramService>();
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+
+    try
+    {
+        var isConnected = await telegramService.TestConnectionAsync();
+        if (isConnected)
+        {
+            logger.LogInformation("? Telegram Bot connection successful");
+        }
+        else
+        {
+            logger.LogWarning("??  Telegram Bot connection failed");
+        }
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "? Error testing Telegram connection");
+    }
+}
 
 app.Run();

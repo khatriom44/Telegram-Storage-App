@@ -5,23 +5,23 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Domain.Entities
+namespace Application.DTOs
 {
-    public class Folder
+    public class FolderDto
     {
         public Guid Id { get; set; }
 
-        [Required]
-        [StringLength(255, MinimumLength = 1)]
+        [Required(ErrorMessage = "Folder name is required")]
+        [StringLength(255, MinimumLength = 1, ErrorMessage = "Folder name must be between 1 and 255 characters")]
         public string Name { get; set; } = string.Empty;
 
         public DateTime CreatedAt { get; set; }
 
         public DateTime? UpdatedAt { get; set; }
 
-        // Telegram-specific properties
-        public long? TelegramMessageId { get; set; }
+        // UI-specific properties
+        public bool IsEditing { get; set; } = false;
 
-        public string? TelegramChannelId { get; set; }
+        public bool IsNew { get; set; } = false;
     }
 }

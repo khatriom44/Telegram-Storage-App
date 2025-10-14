@@ -1,0 +1,18 @@
+﻿@model Application.DTOs.FolderDetailsViewModel
+
+<h2>@Model.Folder.Name</h2>
+<p>Created: @Model.Folder.CreatedAt.ToString("MMM dd, yyyy")</p>
+
+<table class="table">
+    <thead><tr><th>File Name</th><th>Size</th><th>Uploaded</th></tr></thead>
+    <tbody>
+        @foreach (var file in Model.Files)
+        {
+            <tr>
+                <td>@file.FileName</td>
+                <td>@file.Size</td>
+                <td>@file.UploadedAt.ToString("MMM dd, yyyy HH:mm")</td>
+            </tr>
+        }
+    </tbody>
+</table>
